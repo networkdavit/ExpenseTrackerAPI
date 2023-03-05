@@ -24,41 +24,6 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 ''')
 
-# Seed the transactions table
-def seed_data():
-    # Read data from the JSON file
-    with open('temp_data.json') as f:
-        data = json.load(f)
-
-    # Connect to the database
-    conn = sqlite3.connect('transactions.db')
-    c = conn.cursor()
-
-    # Insert each transaction into the database
-    for transaction in data:
-        c.execute('''
-            INSERT INTO transactions (date, institution, account, merchant, amount, type, categoryId, category, isPending, isTransfer, isExpense, isEdited)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            transaction['date'],
-            transaction['institution'],
-            transaction['account'],
-            transaction['merchant'],
-            transaction['amount'],
-            transaction['type'],
-            transaction['categoryId'],
-            transaction['category'],
-            int(transaction['isPending']),
-            int(transaction['isTransfer']),
-            int(transaction['isExpense']),
-            int(transaction['isEdited'])
-        ))
-
-    # Commit the changes and close the connection
-    conn.commit()
-    conn.close()
-
-seed_data()
 
 app = Flask(__name__)
 CORS(app)
