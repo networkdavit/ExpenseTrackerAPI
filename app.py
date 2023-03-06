@@ -1,6 +1,5 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import sqlite3
-import json
 from flask_cors import CORS
 
 
@@ -27,10 +26,6 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 app = Flask(__name__)
 CORS(app)
-
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
 
 @app.route('/transactions')
 def get_transactions():
@@ -62,5 +57,35 @@ def get_transactions():
     
     return jsonify(transactions)
 
+@app.route('/transactions/<int:transaction_id>')
+def get_transaction(transaction_id):
+    conn = sqlite3.connect('transactions.db')
+    
+    cursor = conn.execute('SELECT * FROM transactions WHERE id=?', (transaction_id,))
+    row = cursor.fetchone()
+    
+    conn.close()
+    
+    if row is None:
+        return jsonify({'error': 'Transaction not found'}), 404
+    
+    transaction = {
+        'id': row[0],
+        'date': row[1],
+        'institution': row[2],
+        'account': row[3],
+        'merchant': row[4],
+        'amount': row[5],
+        'type': row[6],
+        'categoryId': row[7],
+        'category': row[8],
+        'isPending': bool(row[9]),
+        'isTransfer': bool(row[10]),
+        'isExpense': bool(row[11]),
+        'isEdited': bool(row[12])
+    }
+    
+    return jsonify(transaction)
+    
 if __name__ == '__main__':
     app.run()
